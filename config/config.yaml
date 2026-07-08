@@ -1,0 +1,14 @@
+hyperfile:
+  dsn: WINPARF_HF
+  user:
+  password:
+
+sqlserver:
+  server: PREPROD-SQL01
+  database: OrderSync
+  trusted_connection: true
+
+application:
+  batch_size: 100
+  log_directory: logs
+  version: 1.0.0

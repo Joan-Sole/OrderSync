@@ -1,0 +1,38 @@
+OrderSync/
+│
+├── src/
+│   ├── main.py
+│   ├── settings.py
+│   ├── logger.py
+│   ├── hyperfile.py
+│   ├── sqlserver.py
+│   ├── etl_control.py
+│   ├── version.py
+│   │
+│   ├── sync/
+│   ├── repositories/
+│   ├── validators/
+│   ├── models/
+│   └── utils/
+│
+├── config/
+│   └── config.yaml
+│
+├── sql/
+│   ├── 001_CreateTables.sql
+│   ├── 002_ETLTables.sql
+│   └── 003_Indexes.sql
+│
+├── tests/
+│
+├── logs/
+│
+├── docs/
+│   ├── DECISIONS.md
+│   ├── CHANGELOG.md
+│   └── FunctionalSpecification.md
+│
+├── requirements.txt
+├── README.md
+├── .gitignore
+└── folder structure
