@@ -32,6 +32,9 @@ OrderSync/
 │   ├── CHANGELOG.md
 │   └── FunctionalSpecification.md
 │
+│
+│
+│
 ├── requirements.txt
 ├── README.md
 ├── .gitignore

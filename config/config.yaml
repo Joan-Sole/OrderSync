@@ -1,14 +1,15 @@
+application:
+  name: OrderSync
+  version: 1.0.0
+  frozen_months: 3
+  log_directory: logs
+
 hyperfile:
-  dsn: WINPARF_HF
-  user:
-  password:
+  dsn: WINPARF
+  user: ""
+  password: ""
 
 sqlserver:
   server: PREPROD-SQL01
   database: OrderSync
   trusted_connection: true
-
-application:
-  batch_size: 100
-  log_directory: logs
-  version: 1.0.0
