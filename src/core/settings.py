@@ -28,8 +28,8 @@ class ApplicationConfig:
 
 @dataclass(frozen=True)
 class HyperFileConfig:
-    dsn: str
-    user: str
+    provider: str
+    repository: str
     password: str
 
 

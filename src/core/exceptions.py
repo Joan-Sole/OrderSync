@@ -69,3 +69,8 @@ class ETLError(OrderSyncError):
     Raised for ETL execution or monitoring errors.
     """
     pass
+
+
+class HyperFileConnectionError(OrderSyncError):
+    """HyperFile connection error."""
+    pass
