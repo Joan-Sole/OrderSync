@@ -3,6 +3,7 @@ application:
   version: 1.0.0
   frozen_months: 3
   log_directory: logs
+  log_level: DEBUG
 
 hyperfile:
   dsn: WINPARF
@@ -10,6 +11,6 @@ hyperfile:
   password: ""
 
 sqlserver:
-  server: PREPROD-SQL01
-  database: OrderSync
+  server: W10\SQLEXPRESS
+  database: WINPARF
   trusted_connection: true

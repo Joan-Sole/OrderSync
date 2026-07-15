@@ -23,6 +23,7 @@ class ApplicationConfig:
     version: str
     frozen_months: int
     log_directory: str
+    log_level: str
 
 
 @dataclass(frozen=True)
