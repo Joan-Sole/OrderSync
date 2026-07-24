@@ -37,7 +37,11 @@ class HyperFileConfig:
 class SqlServerConfig:
     server: str
     database: str
-    trusted_connection: bool
+    driver: str = "ODBC Driver 18 for SQL Server"
+    trusted_connection: bool = True
+    username: str = ""
+    password: str = ""
+    timeout: int = 30
 
 
 @dataclass(frozen=True)

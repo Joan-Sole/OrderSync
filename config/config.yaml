@@ -11,6 +11,10 @@ hyperfile:
   password: WP2017NF525
 
 sqlserver:
+  driver: "ODBC Driver 18 for SQL Server"
   server: W10\SQLEXPRESS
   database: WINPARF
   trusted_connection: true
+  username: ""
+  password: ""
+  timeout: 30

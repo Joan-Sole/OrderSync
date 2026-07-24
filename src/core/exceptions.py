@@ -74,3 +74,10 @@ class ETLError(OrderSyncError):
 class HyperFileConnectionError(OrderSyncError):
     """HyperFile connection error."""
     pass
+
+
+class SqlServerConnectionError(OrderSyncError):
+    """
+    Raised when a SQL Server connection or operation fails.
+    """
+    pass

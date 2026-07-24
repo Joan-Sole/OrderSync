@@ -12,14 +12,12 @@ Version:
     1.0.0
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 import win32com.client as ole
 
 from .exceptions import HyperFileConnectionError
-from .settings   import Settings
+from .settings import Settings
 
 
 class HyperFileConnection:
@@ -34,12 +32,10 @@ class HyperFileConnection:
     @property
     def connection(self) -> Any:
         """
-        Return the active ADODB connection.
+        Return the active native ADODB connection.
 
-        Raises
-        ------
-        HyperFileConnectionError
-            If the connection has not been opened.
+        This property should normally only be used for exceptional cases.
+        Repository classes should preferably call execute().
         """
         if self._connection is None:
             raise HyperFileConnectionError(
@@ -52,6 +48,9 @@ class HyperFileConnection:
         """
         Open the HyperFile OLE DB connection.
         """
+        if self._connection is not None:
+            return
+
         config = self._settings.hyperfile
 
         connection_string = (
@@ -61,13 +60,45 @@ class HyperFileConnection:
         )
 
         try:
-            self._connection = ole.Dispatch("ADODB.Connection")
-            self._connection.Open(connection_string)
+            connection = ole.Dispatch("ADODB.Connection")
+            connection.Open(connection_string)
+
+            self._connection = connection
 
         except Exception as exc:
             self._connection = None
+
             raise HyperFileConnectionError(
                 f"Unable to connect to HyperFile: {exc}"
+            ) from exc
+
+    def execute(self, query: str) -> Any:
+        """
+        Execute a query through the active ADODB connection.
+
+        Parameters
+        ----------
+        query:
+            SQL statement to execute.
+
+        Returns
+        -------
+        Any
+            The ADODB Recordset returned by Execute().
+        """
+        try:
+            result = self.connection.Execute(query)
+
+            # Depending on the pywin32/COM interface, Execute may return
+            # either the Recordset directly or a tuple containing it.
+            if isinstance(result, tuple):
+                return result[0]
+
+            return result
+
+        except Exception as exc:
+            raise HyperFileConnectionError(
+                f"Unable to execute HyperFile query: {exc}"
             ) from exc
 
     def disconnect(self) -> None:
@@ -80,6 +111,12 @@ class HyperFileConnection:
         try:
             if self._connection.State != 0:
                 self._connection.Close()
+
+        except Exception as exc:
+            raise HyperFileConnectionError(
+                f"Unable to disconnect from HyperFile: {exc}"
+            ) from exc
+
         finally:
             self._connection = None
 
