@@ -21,10 +21,10 @@ def main() -> None:
 
 	logger = initialise_logger(settings)
 
-	logger.info("Connecting to Hyperfile")
-	logger.warning("This is a warning.")
-	logger.error("This is an error.")
-	logger.info("Application finished.")
+	logger.info("exemple: Connecting to Hyperfile")
+	logger.warning("exemple: This is a warning.")
+	logger.error("exemple: This is an error.")
+	logger.info("exemple: Application finished.")
 	
 	settings = load_settings("config/config.yaml")
 	logger = initialise_logger(settings)
