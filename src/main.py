@@ -82,16 +82,21 @@ def main() -> None:
 
 
 	with SqlServerConnection(settings) as sqlserver:
-		cursor = sqlserver.execute("SELECT @@VERSION")
+		cursor = sqlserver.execute("SELECT  @@SERVERNAME, DB_NAME(), GETDATE()")
 
 		try:
 			row = cursor.fetchone()
 
 			if row is not None:
 				logger.info(
-					"SQL Server connection successful: %s",
-					row[0],
-		   	 )
+					"SQL Server connection successful nom serveur: %s",
+					row[0],)
+				logger.info(
+					"SQL Server connection successful nom DB: %s",
+					row[1],)
+				logger.info(
+					"SQL Server connection successful Date: %s",
+					row[2],)				
 		finally:
 			cursor.close()
 

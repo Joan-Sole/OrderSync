@@ -5,7 +5,8 @@ Module:
     sqlserver_repository.py
 
 Description:
-    Repository for accessing OrderSync data stored in SQL Server.
+    Repository for accessing COMMANDE and LGCDE data stored in SQL Server.
+    SQL Server table and field names preserve the original HyperFile names.
 
 Version:
     1.0.0
@@ -16,166 +17,17 @@ from __future__ import annotations
 from typing import Any
 
 from core.sqlserver import SqlServerConnection
+from models.commande import Commande
+from models.lgcde import Lgcde
 
 
 class SqlServerRepository:
-    """
-    Provide access to OrderSync tables stored in SQL Server.
-    """
+    """Provide access to COMMANDE and LGCDE stored in SQL Server."""
 
-    def __init__(
-        self,
-        connection: SqlServerConnection,
-    ) -> None:
+    def __init__(self, connection: SqlServerConnection) -> None:
         self._connection = connection
 
-    def count_orders(self) -> int:
-        """
-        Return the total number of order headers stored in SQL Server.
-        """
-        query = """
-            SELECT COUNT(*)
-            FROM orders_header
-        """
-
-        cursor = self._connection.execute(query)
-
-        try:
-            row = cursor.fetchone()
-
-            if row is None:
-                return 0
-
-            return int(row[0])
-
-        finally:
-            cursor.close()
-
-    def count_order_lines(self) -> int:
-        """
-        Return the total number of order lines stored in SQL Server.
-        """
-        query = """
-            SELECT COUNT(*)
-            FROM orders_lines
-        """
-
-        cursor = self._connection.execute(query)
-
-        try:
-            row = cursor.fetchone()
-
-            if row is None:
-                return 0
-
-            return int(row[0])
-
-        finally:
-            cursor.close()
-
-    def order_exists(self, order_number: str) -> bool:
-        """
-        Check whether an order already exists in SQL Server.
-
-        Parameters
-        ----------
-        order_number:
-            HyperFile order number.
-
-        Returns
-        -------
-        bool
-            True when the order exists.
-        """
-        query = """
-            SELECT 1
-            FROM orders_header
-            WHERE order_number = ?
-        """
-
-        cursor = self._connection.execute(
-            query,
-            (order_number,),
-        )
-
-        try:
-            return cursor.fetchone() is not None
-
-        finally:
-            cursor.close()
-
-    def get_order_status(
-        self,
-        order_number: str,
-    ) -> int | None:
-        """
-        Return the current status of an order.
-
-        Parameters
-        ----------
-        order_number:
-            HyperFile order number.
-
-        Returns
-        -------
-        int | None
-            Order status, or None when the order does not exist.
-        """
-        query = """
-            SELECT status
-            FROM orders_header
-            WHERE order_number = ?
-        """
-
-        cursor = self._connection.execute(
-            query,
-            (order_number,),
-        )
-
-        try:
-            row = cursor.fetchone()
-
-            if row is None:
-                return None
-
-            return int(row[0])
-
-        finally:
-            cursor.close()
-
-    def get_order_line_count(
-        self,
-        order_number: str,
-    ) -> int:
-        """
-        Return the number of lines stored for an order.
-        """
-        query = """
-            SELECT COUNT(*)
-            FROM orders_lines
-            WHERE order_number = ?
-        """
-
-        cursor = self._connection.execute(
-            query,
-            (order_number,),
-        )
-
-        try:
-            row = cursor.fetchone()
-
-            if row is None:
-                return 0
-
-            return int(row[0])
-
-        finally:
-            cursor.close()
-
     def get_database_information(self) -> dict[str, Any]:
-        """
-        Return basic information about the SQL Server connection.
-        """
         query = """
             SELECT
                 @@SERVERNAME AS server_name,
@@ -199,3 +51,222 @@ class SqlServerRepository:
 
         finally:
             cursor.close()
+
+    def count_commandes(self) -> int:
+        cursor = self._connection.execute(
+            "SELECT COUNT(*) FROM COMMANDE"
+        )
+
+        try:
+            row = cursor.fetchone()
+            return 0 if row is None else int(row[0])
+
+        finally:
+            cursor.close()
+
+    def commande_exists(self, nocde: str) -> bool:
+        query = """
+            SELECT 1
+            FROM COMMANDE
+            WHERE NOCDE = ?
+        """
+
+        cursor = self._connection.execute(query, (nocde,))
+
+        try:
+            return cursor.fetchone() is not None
+
+        finally:
+            cursor.close()
+
+    def get_commande_status(self, nocde: str) -> str | None:
+        query = """
+            SELECT TYPCDE
+            FROM COMMANDE
+            WHERE NOCDE = ?
+        """
+
+        cursor = self._connection.execute(query, (nocde,))
+
+        try:
+            row = cursor.fetchone()
+
+            if row is None or row[0] is None:
+                return None
+
+            return str(row[0]).strip()
+
+        finally:
+            cursor.close()
+
+    def insert_commande(self, commande: Commande) -> None:
+        query = """
+            INSERT INTO COMMANDE (
+                TYPCDE,
+                NOCDE,
+                CFOUR,
+                CCOMPTE,
+                LIBCDE,
+                DTCDE,
+                HEURECDE,
+                NOCHRONO,
+                OBSER,
+                MODECDE,
+                DTLIVPREVU,
+                NBJOURS,
+                CDECENTRAL,
+                TXREM,
+                MTCDE,
+                MTRECU,
+                MAGCDE,
+                MAGLIVR,
+                RETOUR_CDE,
+                DTREC,
+                DTFACT,
+                FORMAT_EDI,
+                STATUTEDI
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?
+            )
+        """
+
+        parameters = (
+            commande.TYPCDE,
+            commande.NOCDE,
+            commande.CFOUR,
+            commande.CCOMPTE,
+            commande.LIBCDE,
+            commande.DTCDE,
+            commande.HEURECDE,
+            commande.NOCHRONO,
+            commande.OBSER,
+            commande.MODECDE,
+            commande.DTLIVPREVU,
+            commande.NBJOURS,
+            None if commande.CDECENTRAL is None else int(commande.CDECENTRAL),
+            commande.TXREM,
+            commande.MTCDE,
+            commande.MTRECU,
+            commande.MAGCDE,
+            commande.MAGLIVR,
+            commande.RETOUR_CDE,
+            commande.DTREC,
+            commande.DTFACT,
+            None if commande.FORMAT_EDI is None else int(commande.FORMAT_EDI),     
+            commande.STATUTEDI,
+        )
+
+        cursor = self._connection.execute(query, parameters)
+        cursor.close()
+
+    def count_lgcde(self) -> int:
+        cursor = self._connection.execute(
+            "SELECT COUNT(*) FROM LGCDE"
+        )
+
+        try:
+            row = cursor.fetchone()
+            return 0 if row is None else int(row[0])
+
+        finally:
+            cursor.close()
+
+    def count_lgcde_for_commande(self, nocde: str) -> int:
+        query = """
+            SELECT COUNT(*)
+            FROM LGCDE
+            WHERE NOCDE = ?
+        """
+
+        cursor = self._connection.execute(query, (nocde,))
+
+        try:
+            row = cursor.fetchone()
+            return 0 if row is None else int(row[0])
+
+        finally:
+            cursor.close()
+
+    def lgcde_exists(
+        self,
+        nocde: str,
+        cmarq: str,
+        ccateg: str,
+        cprod: str,
+    ) -> bool:
+        query = """
+            SELECT 1
+            FROM LGCDE
+            WHERE
+                NOCDE = ?
+                AND CMARQ = ?
+                AND CCATEG = ?
+                AND CPROD = ?
+        """
+
+        cursor = self._connection.execute(
+            query,
+            (
+                nocde,
+                cmarq,
+                ccateg,
+                cprod,
+            ),
+        )
+
+        try:
+            return cursor.fetchone() is not None
+
+        finally:
+            cursor.close()
+
+    def insert_lgcde(self, line: Lgcde) -> None:
+        query = """
+            INSERT INTO LGCDE (
+                TYPCDE,
+                NOCDE,
+                CMARQ,
+                CCATEG,
+                CPROD,
+                PAAR,
+                PAMP,
+                QTESTK,
+                QTECDE,
+                TXREM,
+	            TVA,
+                QTERECU,
+                QTEREFUS,
+                QTEFAC,
+                MTLIG
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, 
+                ?, ?, ?
+            )
+        """
+
+        parameters = (
+            line.TYPCDE,
+            line.NOCDE,
+            line.CMARQ,
+            line.CCATEG,
+            line.CPROD,
+            line.PAAR,
+            line.PAMP,
+            line.QTESTK,
+            line.QTECDE,
+            line.TXREM,
+            line.TVA,
+            line.QTERECU,
+            line.QTEREFUS,
+            line.QTEFAC,
+            line.MTLIG,
+        )
+
+        cursor = self._connection.execute(query, parameters)
+        cursor.close()

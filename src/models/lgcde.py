@@ -4,20 +4,21 @@ from dataclasses import dataclass
 @dataclass
 class Lgcde:
 
-	typcde: str
-	nocde: str
-	cmarq: str
-	ccateg: str
-	cprod: str
-
-	paar: float
-	pamp: float
-
-	qtestk: int
-	qtecde: int
-	qterecu: int
-
-	mtlig: float
+	TYPCDE: str
+	NOCDE: str
+	CMARQ: str
+	CCATEG: str
+	CPROD: str
+	PAAR: float | None
+	PAMP: float | None
+	QTESTK: int | None
+	QTECDE: int | None
+	TXREM: float | None
+	TVA: float | None
+	QTERECU: int | None
+	QTEREFUS: int | None
+	QTEFAC: int | None
+	MTLIG: float | None
 
 	@property
 	def product_id(self) -> tuple[str, str, str]:
@@ -25,9 +26,9 @@ class Lgcde:
 		Product identifier.
 		"""
 		return (
-			self.cmarq,
-			self.ccateg,
-			self.cprod,
+			self.CMARQ,
+			self.CCATEG,
+			self.CPROD,
 		)
 
 
@@ -37,8 +38,8 @@ class Lgcde:
 		Unique key of one order line.
 		"""
 		return (
-			self.nocde,
-			self.cmarq,
-			self.ccateg,
-			self.cprod,
+			self.NOCDE,
+			self.CMARQ,
+			self.CCATEG,
+			self.CPROD,
 		)
