@@ -48,9 +48,13 @@ def initialise_logger(settings: Settings) -> logging.Logger:
     # Create log directory
     # ------------------------------------------------------------------
 
-    log_directory = Path(settings.application.log_directory)
-    log_directory.mkdir(parents=True, exist_ok=True)
+    # script location /OrderSync/src/core/logger.py  target location /OrderSync
+    project_root = Path(__file__).resolve().parents[2]
 
+    # final target location /OrderSync/logs
+    log_directory = project_root / "logs"
+
+    log_directory.mkdir(parents=True, exist_ok=True)
     log_file = log_directory / "ordersync.log"
 
     # ------------------------------------------------------------------

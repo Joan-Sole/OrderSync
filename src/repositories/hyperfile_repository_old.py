@@ -10,21 +10,17 @@ Description:
 Version:
     1.0.0
 """
-from asyncio.log import logger
 from collections import defaultdict
 from collections.abc import Iterator
-from dataclasses import field
 from typing import Any
-from pathlib import Path
 
 from core.exceptions import RepositoryError
 from core.hyperfile import HyperFileConnection
-from core.settings import load_settings
 
 from models.commande import Commande
 from models.lgcde import Lgcde
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 class HyperFileRepository:
     """Read COMMANDE and LGCDE sequentially from HyperFile."""
@@ -33,52 +29,6 @@ class HyperFileRepository:
         self._connection = connection
 
 
-    def filter_orders_by_date_clause(self, per: Any | None = None, where: str ='', field: str ='DTCDE') -> str:
-        """
-        Return a SQL WHERE clause to filter orders by date.
-
-        Args:
-            per (int): Number of weeks to look back from today. By default is loaded as settings.application.maj_periode
-            where (str): Can insert and existing SQL WHERE clause to append to. We assume no blanks at the beginning
-            field (str): Date field used for filtering.
-
-        Returns:
-            str: SQL WHERE clause.
-        """
-        if per is None:
-            
-            # script location /OrderSync/src/repositories/hyperfile_repository.py  target location /OrderSync
-            project_root = Path(__file__).resolve().parents[2]
-
-            # final target location /OrderSync/config
-            config_directory = project_root / "config"
-
-            config_directory.mkdir(parents=True, exist_ok=True)
-            config_file = config_directory / "config.yaml"
-            settings = load_settings(config_file)
-            per = settings.application.maj_periode
-
-        try:
-            periode=int(per)
-        except (TypeError, ValueError):
-            periode = 0
-
-        if periode <= 0:
-            logger.warning("Période de filtrage désactivée.")
-            return where
-
-        filter_date = date.today() - timedelta(weeks=periode)
-
-        condition = (
-            f"{field} >= '{filter_date.strftime('%Y%m%d')}'"
-        )
-
-        if where:
-            return f"{where} AND {condition}"
-
-        return f"WHERE {condition}"
-
-    
     def iter_orders_with_lines(
         self,
     ) -> Iterator[tuple[Commande, list[Lgcde]]]:
@@ -110,9 +60,7 @@ class HyperFileRepository:
     def iter_orders(self) -> Iterator[Commande]:
         """Read every COMMANDE record sequentially using one query."""
 
-        where_clause = self.filter_orders_by_date_clause()
-
-        query = f"""
+        query = """
             SELECT
                 TYPCDE,
                 NOCDE,
@@ -138,15 +86,14 @@ class HyperFileRepository:
                 FORMAT_EDI,
                 STATUTEDI
                 
-            FROM COMMANDE 
-            {where_clause}
+            FROM COMMANDE WHERE DTCDE >= ?
             ORDER BY NOCDE
         """
 
         recordset = None
 
         try:
-            recordset = self._execute(query)
+            recordset = self._execute(query, date.today())
 
             while not recordset.EOF:
                 yield self._build_order(recordset)

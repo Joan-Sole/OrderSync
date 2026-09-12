@@ -1,4 +1,5 @@
 from asyncio.log import logger
+from pathlib import Path
 
 from core.settings import load_settings
 from core.logger import initialise_logger
@@ -9,7 +10,17 @@ from repositories.hyperfile_repository import HyperFileRepository
 import time
 
 def main() -> None:
-	settings = load_settings("config/config.yaml")
+	
+	# script location /OrderSync/src/main.py  target location /OrderSync
+	project_root = Path(__file__).resolve().parents[1]
+
+	# final target location /OrderSync/config
+	config_directory = project_root / "config"
+
+	config_directory.mkdir(parents=True, exist_ok=True)
+	config_file = config_directory / "config.yaml"
+
+	settings = load_settings(config_file)
 
 	print(settings.application.name)
 	print(settings.application.version)
@@ -18,6 +29,7 @@ def main() -> None:
 	print(settings.hyperfile.repository)
 	print(settings.sqlserver.server)
 	print(settings.sqlserver.database)
+	print(settings.application.maj_periode)
 
 	logger = initialise_logger(settings)
 
@@ -25,9 +37,6 @@ def main() -> None:
 	logger.warning("exemple: This is a warning.")
 	logger.error("exemple: This is an error.")
 	logger.info("exemple: Application finished.")
-	
-	settings = load_settings("config/config.yaml")
-	logger = initialise_logger(settings)
 
 	sql = SqlServerConnection(settings)
 	logger.info("Connecting SQL Server...")

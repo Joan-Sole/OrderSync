@@ -4,6 +4,8 @@ application:
   frozen_months: 3
   log_directory: logs
   log_level: DEBUG
+# int en numéro de semaines. Fenêtre arrière pour mettre à jour les commandes dans COMMANDE et LGCDE. Absence, "0" ou negatif => fenêtre de filtrage désactivée.
+  maj_periode: 30
 
 hyperfile:
   provider: PCSOFT.HFSQL

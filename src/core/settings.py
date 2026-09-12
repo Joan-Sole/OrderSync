@@ -24,6 +24,7 @@ class ApplicationConfig:
     frozen_months: int
     log_directory: str
     log_level: str
+    maj_periode: int
 
 
 @dataclass(frozen=True)
@@ -49,7 +50,7 @@ class Settings:
     application: ApplicationConfig
     hyperfile: HyperFileConfig
     sqlserver: SqlServerConfig
-
+    
 
 def load_settings(config_path: str | Path) -> Settings:
     """
