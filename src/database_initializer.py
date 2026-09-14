@@ -3,6 +3,10 @@ OrderSync
 
 Module:
 	database_initializer.py
+	
+Location:
+	src\
+
 
 Description:
 	Checks and initializes the SQL Server database schema.
@@ -16,8 +20,11 @@ from pathlib import Path
 from core.exceptions import RepositoryError
 from core.sqlserver import SqlServerConnection
 from core.settings import load_settings
+import logging
+
 from core.logger import initialise_logger
 
+logger = logging.getLogger(__name__)
 
 class DatabaseInitializer:
 	"""Initialize the SQL Server schema when required."""
@@ -37,7 +44,7 @@ class DatabaseInitializer:
 		self._connection = connection
 		self._script_path = project_root / "sql" / "table_creation.sql"
 
-	def initialize(self) -> None:
+	def initialize(self, database) -> None:
 		"""
 		Create a brand new database tables if none exists.
 		"""
@@ -51,7 +58,7 @@ class DatabaseInitializer:
 					f"Database initialization failed. There are some missing tables: {missing}"
 				)
 			else:
-				self._execute_creation_script()
+				self._execute_creation_script(database)
 				logger.info("Database tables created successfully.")
 		else:
 			logger.info("Database tables already exist.")
@@ -79,7 +86,7 @@ class DatabaseInitializer:
 			cursor.close()
 
 
-	def _execute_creation_script(self) -> None:
+	def _execute_creation_script(self, database) -> None:
 		"""Execute table_creation.sql."""
 
 		if not self._script_path.exists():
@@ -88,6 +95,7 @@ class DatabaseInitializer:
 			)
 
 		sql_script = self._script_path.read_text(encoding="utf-8")
+		sql_script = sql_script.replace("{DB_NAME}", database)
 		cursor = None
 
 		try:
@@ -104,27 +112,25 @@ class DatabaseInitializer:
 
 if __name__ == "__main__":
 	
-	
-	
 	# script location /OrderSync/src/database_initializer.py  target location /OrderSync
 	project_root = Path(__file__).resolve().parents[1]
 
 	# final target location /OrderSync/logs
-	config_directory = project_root / "config"
-
-	config_directory.mkdir(parents=True, exist_ok=True)
-	config_file = config_directory / "config.yaml"
+	config_file = project_root / "config" / "config.yaml"
 
 	settings = load_settings(config_file)
-
-	logger = initialise_logger(settings)
-	sqlobject=SqlServerConnection(settings)
-	sqlobject.connect()
-
-	initializer = DatabaseInitializer(sqlobject, project_root)
+	# Initialise the logger as database_initializer.py is a main entry point of the application.
+	initialise_logger(settings)
 	logger.info("Creating database tables...")
-	initializer.initialize()
-	logger.info("Database tables creation process completed.")
+	with SqlServerConnection(settings) as sqlobject:
+		initializer = DatabaseInitializer(
+			sqlobject,
+			project_root,
+		)
+
+		logger.info("Creating database tables...")
+		initializer.initialize(settings.sqlserver.database)
+
 
 
 

@@ -4,6 +4,9 @@ OrderSync
 
 Module:
     hyperfile.py
+    
+Location:
+    src\\core
 
 Description:
     HyperFile connection management through OLE DB and ADODB.
@@ -18,7 +21,9 @@ import win32com.client as ole
 
 from .exceptions import HyperFileConnectionError
 from .settings import Settings
+import logging
 
+logger = logging.getLogger(__name__)
 
 class HyperFileConnection:
     """

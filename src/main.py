@@ -1,8 +1,24 @@
-from asyncio.log import logger
+"""
+OrderSync
+
+Module:
+	main.py
+	
+Location:
+	src\
+
+Description:
+	Main entry point for the OrderSync application.
+
+Version:
+	1.0.0
+"""
+
 from pathlib import Path
 
-from core.settings import load_settings
-from core.logger import initialise_logger
+import logging
+from core.settings  import load_settings
+from core.logger    import initialise_logger
 from core.sqlserver import SqlServerConnection
 from core.hyperfile import HyperFileConnection
 from repositories.hyperfile_repository import HyperFileRepository
@@ -17,26 +33,27 @@ def main() -> None:
 	# final target location /OrderSync/config
 	config_directory = project_root / "config"
 
-	config_directory.mkdir(parents=True, exist_ok=True)
+#	config_directory.mkdir(parents=True, exist_ok=True)
 	config_file = config_directory / "config.yaml"
 
 	settings = load_settings(config_file)
 
 	print(settings.application.name)
 	print(settings.application.version)
-	print(settings.application.frozen_months)
 	print(settings.hyperfile.provider)
 	print(settings.hyperfile.repository)
 	print(settings.sqlserver.server)
 	print(settings.sqlserver.database)
 	print(settings.application.maj_periode)
 
-	logger = initialise_logger(settings)
+	initialise_logger(settings)
+	logger = logging.getLogger(__name__)
 
 	logger.info("exemple: Connecting to Hyperfile")
 	logger.warning("exemple: This is a warning.")
 	logger.error("exemple: This is an error.")
-	logger.info("exemple: Application finished.")
+	logger.debug("exemple: Application debug point.")
+	logger.exception("exemple: Exception OrderSync failed.")
 
 	sql = SqlServerConnection(settings)
 	logger.info("Connecting SQL Server...")
@@ -55,15 +72,11 @@ def main() -> None:
 		recordset = hyper.execute(
 			"SELECT COUNT(*) AS TOTAL FROM COMMANDE"
 		)
-
 		total = recordset.Fields("TOTAL").Value
-
 		logger.info("Orders found in HyperFile: %s", total)
-
 		recordset.Close()
 
 	logger.info("HyperFile connection closed.")
-
 
 	started_at = time.perf_counter()
 
@@ -74,17 +87,13 @@ def main() -> None:
 	print("Starting order synchronization...................................")
 
 	with SqlServerConnection(settings) as sql:
-
 		cursor = sql.execute(
 	   		 "SELECT @@SERVERNAME, DB_NAME(), GETDATE()"
    		 )
-
 		row = cursor.fetchone()
-
 		logger.info("Server   : %s", row[0])
 		logger.info("Database : %s", row[1])
 		logger.info("Date     : %s", row[2])
-
 		cursor.close()
 
 	print("Starting order synchronization...................................")
@@ -92,10 +101,8 @@ def main() -> None:
 
 	with SqlServerConnection(settings) as sqlserver:
 		cursor = sqlserver.execute("SELECT  @@SERVERNAME, DB_NAME(), GETDATE()")
-
 		try:
 			row = cursor.fetchone()
-
 			if row is not None:
 				logger.info(
 					"SQL Server connection successful nom serveur: %s",

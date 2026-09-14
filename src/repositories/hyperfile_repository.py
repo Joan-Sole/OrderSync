@@ -4,27 +4,31 @@ OrderSync
 Module:
     hyperfile_repository.py
 
+Location:
+    src\\repositories
+
 Description:
     Reads order headers and order lines from the HyperFile database.
 
 Version:
     1.0.0
 """
-from asyncio.log import logger
 from collections import defaultdict
 from collections.abc import Iterator
-from dataclasses import field
 from typing import Any
 from pathlib import Path
 
-from core.exceptions import RepositoryError
+from core.exceptions import RepositoryError, ValidationError
 from core.hyperfile import HyperFileConnection
 from core.settings import load_settings
 
 from models.commande import Commande
 from models.lgcde import Lgcde
+import logging
 
 from datetime import date, datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 class HyperFileRepository:
     """Read COMMANDE and LGCDE sequentially from HyperFile."""
@@ -45,6 +49,7 @@ class HyperFileRepository:
         Returns:
             str: SQL WHERE clause.
         """
+
         if per is None:
             
             # script location /OrderSync/src/repositories/hyperfile_repository.py  target location /OrderSync
@@ -53,7 +58,6 @@ class HyperFileRepository:
             # final target location /OrderSync/config
             config_directory = project_root / "config"
 
-            config_directory.mkdir(parents=True, exist_ok=True)
             config_file = config_directory / "config.yaml"
             settings = load_settings(config_file)
             per = settings.application.maj_periode
@@ -149,8 +153,16 @@ class HyperFileRepository:
             recordset = self._execute(query)
 
             while not recordset.EOF:
-                yield self._build_order(recordset)
-                recordset.MoveNext()
+                try:
+                    order = self._build_order(recordset)
+                    yield order
+                except ValidationError as exc:
+                    logger.warning(
+                        "COMMANDE discarded: %s",
+                        exc,
+                    )
+                finally:
+                    recordset.MoveNext()
 
         except Exception as exc:
             raise RepositoryError(
@@ -164,25 +176,34 @@ class HyperFileRepository:
     def iter_order_lines(self) -> Iterator[Lgcde]:
         """Read every LGCDE record sequentially using one query."""
 
-        query = """
-            SELECT
-                TYPCDE,
-                NOCDE,
-                CMARQ,
-                CCATEG,
-                CPROD,
-                PAAR,
-                PAMP,
-                QTESTK,
-                QTECDE,
-                TXREM,
-                TVA,
-                QTERECU,
-                QTEREFUS,
-                QTEFAC,
-                MTLIG
-            FROM LGCDE
-            ORDER BY NOCDE, CMARQ, CCATEG, CPROD
+        where_clause = self.filter_orders_by_date_clause(field="COMMANDE.DTCDE")
+        
+        query = f"""
+        SELECT
+            LGCDE.TYPCDE,
+            LGCDE.NOCDE,
+            LGCDE.CMARQ,
+            LGCDE.CCATEG,
+            LGCDE.CPROD,
+            LGCDE.PAAR,
+            LGCDE.PAMP,
+            LGCDE.QTESTK,
+            LGCDE.QTECDE,
+            LGCDE.TXREM,
+            LGCDE.TVA,
+            LGCDE.QTERECU,
+            LGCDE.QTEREFUS,
+            LGCDE.QTEFAC,
+            LGCDE.MTLIG
+        FROM LGCDE
+        INNER JOIN COMMANDE
+            ON LGCDE.NOCDE = COMMANDE.NOCDE
+            {where_clause}
+        ORDER BY
+            LGCDE.NOCDE,
+            LGCDE.CMARQ,
+            LGCDE.CCATEG,
+            LGCDE.CPROD
         """
 
         recordset = None
@@ -191,8 +212,16 @@ class HyperFileRepository:
             recordset = self._execute(query)
 
             while not recordset.EOF:
-                yield self._build_line(recordset)
-                recordset.MoveNext()
+                try:
+                    line = self._build_line(recordset)
+                    yield line
+                except ValidationError as exc:
+                    logger.warning(
+                        "LGCDE discarded: %s",
+                        exc,
+                    )
+                finally:
+                    recordset.MoveNext()
 
         except Exception as exc:
             raise RepositoryError(
@@ -226,13 +255,13 @@ class HyperFileRepository:
 
     def _build_order(self, recordset: Any) -> Commande:
         return Commande (
-            TYPCDE=self._checked_text_value(recordset, "TYPCDE"),
-            NOCDE=self._checked_text_value(recordset, "NOCDE"),
-            CFOUR=self._checked_text_value(recordset, "CFOUR"),
+            TYPCDE=self._required_text_value(recordset, "TYPCDE"),
+            NOCDE=self._required_text_value(recordset, "NOCDE"),
+            CFOUR=self._required_text_value(recordset, "CFOUR"),
             CCOMPTE=self._text_value(recordset, "CCOMPTE"),
             LIBCDE=self._text_value(recordset, "LIBCDE"),
-            DTCDE=self._date_value(recordset, "DTCDE"),
-            HEURECDE=self._checked_text_value(recordset, "HEURECDE"),
+            DTCDE=self._required_date_value(recordset, "DTCDE"),
+            HEURECDE=self._text_value(recordset, "HEURECDE"),
             NOCHRONO=self._text_value(recordset, "NOCHRONO"),
             OBSER=self._text_value(recordset, "OBSER"),
             MODECDE=self._text_value(recordset, "MODECDE"),
@@ -253,11 +282,11 @@ class HyperFileRepository:
 
     def _build_line(self, recordset: Any) -> Lgcde:
         return Lgcde(
-            TYPCDE=self._checked_text_value(recordset, "TYPCDE"),
-            NOCDE=self._checked_text_value(recordset, "NOCDE"),
-            CMARQ=self._checked_text_value(recordset, "CMARQ"),
-            CCATEG=self._checked_text_value(recordset, "CCATEG"),
-            CPROD=self._checked_text_value(recordset, "CPROD"),
+            TYPCDE=self._required_text_value(recordset, "TYPCDE"),
+            NOCDE=self._required_text_value(recordset, "NOCDE"),
+            CMARQ=self._required_text_value(recordset, "CMARQ"),
+            CCATEG=self._required_text_value(recordset, "CCATEG"),
+            CPROD=self._required_text_value(recordset, "CPROD"),
             PAAR=self._float_value(recordset, "PAAR"),
             PAMP=self._float_value(recordset, "PAMP"),
             QTESTK=self._integer_value(recordset, "QTESTK"),
@@ -286,27 +315,41 @@ class HyperFileRepository:
 
         return value
 
+
     def _text_value(
         self,
         recordset: Any,
         field_name: str,
         default: str = "",
-    ) -> str:
+ ) -> str | None:
         value = self._field_value(recordset, field_name, default)
-        return str(value).strip()
-
-
-    def _checked_text_value(
-        self,
-        recordset: Any,
-        field_name: str,
-    ) -> str | None:
-        value = self._field_value(recordset, field_name, None)
 
         if value is None:
             return None
 
         return str(value).strip()
+
+
+    def _required_text_value(
+        self,
+        recordset: Any,
+        field_name: str,
+    ) -> str:
+        value = self._field_value(recordset, field_name, None)
+
+        if value is None:
+            raise ValidationError(
+                f"Required field {field_name} is NULL."
+            )
+
+        value = str(value).strip()
+
+        if not value:
+            raise ValidationError(
+                f"Required field {field_name} is empty."
+            )
+
+        return value
 
 
     def _integer_value(
@@ -374,6 +417,22 @@ class HyperFileRepository:
             return value
 
         return None
+
+
+    def _required_date_value(
+        self,
+        recordset: Any,
+        field_name: str,
+    ) -> date:
+        value = self._date_value(recordset, field_name)
+
+        if value is None:
+            raise ValidationError(
+                f"Required date field {field_name} is NULL or invalid."
+            )
+
+        return value
+
 
     @staticmethod
     def _close_recordset(recordset: Any) -> None:

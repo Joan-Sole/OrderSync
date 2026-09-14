@@ -22,3 +22,6 @@ htmlcov/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# others
+rep_txt/

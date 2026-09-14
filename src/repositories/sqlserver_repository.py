@@ -3,6 +3,9 @@ OrderSync
 
 Module:
     sqlserver_repository.py
+    
+Location:
+    src\\repositories
 
 Description:
     Repository for accessing COMMANDE and LGCDE data stored in SQL Server.
@@ -15,11 +18,12 @@ Version:
 from __future__ import annotations
 
 from typing import Any
-
+import logging
 from core.sqlserver import SqlServerConnection
 from models.commande import Commande
 from models.lgcde import Lgcde
 
+logger = logging.getLogger(__name__)
 
 class SqlServerRepository:
     """Provide access to COMMANDE and LGCDE stored in SQL Server."""

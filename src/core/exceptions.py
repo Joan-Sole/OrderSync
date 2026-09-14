@@ -3,6 +3,9 @@ OrderSync
 
 Module:
     exceptions.py
+    
+Location:
+    src\\core
 
 Description:
     Custom exceptions used throughout the OrderSync application.
@@ -36,13 +39,6 @@ class HyperFileConnectionError(OrderSyncError):
     pass
 
 
-class SqlServerConnectionError(OrderSyncError):
-    """
-    Raised when a connection to the SQL Server database cannot be established.
-    """
-    pass
-
-
 class ValidationError(OrderSyncError):
     """
     Raised when one or more fields fail validation.
@@ -68,11 +64,6 @@ class ETLError(OrderSyncError):
     """
     Raised for ETL execution or monitoring errors.
     """
-    pass
-
-
-class HyperFileConnectionError(OrderSyncError):
-    """HyperFile connection error."""
     pass
 
 

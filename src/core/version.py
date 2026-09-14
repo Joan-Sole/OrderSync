@@ -1,4 +1,0 @@
-APP_NAME = "OrderSync"
-VERSION = "0.1.0"
-
-FULL_NAME = f"{APP_NAME} {VERSION}"

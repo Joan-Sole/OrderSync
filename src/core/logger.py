@@ -3,6 +3,9 @@ OrderSync
 
 Module:
     logger.py
+    
+Location:
+    src\\core
 
 Description:
     Central logging configuration for the OrderSync application.
@@ -14,16 +17,15 @@ Version:
     1.0.0
 """
 
-from pathlib import Path
-from logging.handlers import RotatingFileHandler
+from   pathlib import Path
+from   logging.handlers import RotatingFileHandler
 import logging
-
-from core.settings import Settings
+from   .settings import Settings
 
 
 def initialise_logger(settings: Settings) -> logging.Logger:
     """
-    Initialise and configure the application logger.
+    Initialise and configure the application logging system.
 
     Parameters
     ----------
@@ -33,26 +35,31 @@ def initialise_logger(settings: Settings) -> logging.Logger:
     Returns
     -------
     logging.Logger
-        Configured logger instance.
+        Configured root logger instance.
     """
 
-    logger = logging.getLogger(settings.application.name)
+    # Root logger. All module loggers created with
+    # logging.getLogger(__name__) will inherit this configuration.
+    logger = logging.getLogger()
 
-    # Prevent duplicate handlers if called more than once
+    # Prevent duplicate handlers if called more than once.
     if logger.hasHandlers():
         return logger
 
-    logger.setLevel(logging.INFO)
+    log_level = settings.application.log_level.upper()
+
+    logger.setLevel(log_level)
 
     # ------------------------------------------------------------------
     # Create log directory
     # ------------------------------------------------------------------
 
-    # script location /OrderSync/src/core/logger.py  target location /OrderSync
+    # script location /OrderSync/src/core/logger.py
+    # target location /OrderSync
     project_root = Path(__file__).resolve().parents[2]
 
     # final target location /OrderSync/logs
-    log_directory = project_root / "logs"
+    log_directory = project_root / settings.application.log_directory
 
     log_directory.mkdir(parents=True, exist_ok=True)
     log_file = log_directory / "ordersync.log"
@@ -62,7 +69,7 @@ def initialise_logger(settings: Settings) -> logging.Logger:
     # ------------------------------------------------------------------
 
     formatter = logging.Formatter(
-        fmt="%(asctime)s | %(levelname)-8s | %(message)s",
+        fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
@@ -72,7 +79,7 @@ def initialise_logger(settings: Settings) -> logging.Logger:
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(log_level)
 
     # ------------------------------------------------------------------
     # Rotating log file
@@ -82,11 +89,11 @@ def initialise_logger(settings: Settings) -> logging.Logger:
         filename=log_file,
         maxBytes=5 * 1024 * 1024,     # 5 MB
         backupCount=5,
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(log_level)
 
     # ------------------------------------------------------------------
     # Register handlers
@@ -96,9 +103,11 @@ def initialise_logger(settings: Settings) -> logging.Logger:
     logger.addHandler(file_handler)
 
     logger.info("======================================================")
-    logger.info("%s %s",
-                settings.application.name,
-                settings.application.version)
+    logger.info(
+        "%s %s",
+        settings.application.name,
+        settings.application.version,
+    )
     logger.info("Logger initialised.")
     logger.info("======================================================")
 

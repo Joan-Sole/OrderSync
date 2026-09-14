@@ -3,6 +3,10 @@ OrderSync
 
 Module:
     sqlserver.py
+        
+Location:
+    src\\core
+
 
 Description:
     SQL Server connection management through pyodbc.
@@ -14,11 +18,13 @@ Version:
 from __future__ import annotations
 
 from typing import Any
+import logging
 
 import pyodbc
 
 from .exceptions import SqlServerConnectionError
 from .settings import Settings
+logger = logging.getLogger(__name__)
 
 
 class SqlServerConnection:
@@ -65,6 +71,7 @@ class SqlServerConnection:
                 timeout=config.timeout,
             )
 
+            logger.info("SQL Server connection opened.")
         except pyodbc.Error as exc:
             self._connection = None
 
@@ -197,6 +204,7 @@ class SqlServerConnection:
         """
         try:
             self.connection.commit()
+            logger.debug("SQL Server transaction committed.")
 
         except SqlServerConnectionError:
             raise
@@ -212,6 +220,7 @@ class SqlServerConnection:
         """
         try:
             self.connection.rollback()
+            logger.warning("SQL Server transaction rolled back.")
 
         except SqlServerConnectionError:
             raise
@@ -230,6 +239,7 @@ class SqlServerConnection:
 
         try:
             self._connection.close()
+            logger.info("SQL Server connection closed.")
 
         except pyodbc.Error as exc:
             raise SqlServerConnectionError(
@@ -249,10 +259,11 @@ class SqlServerConnection:
         exception_value: BaseException | None,
         traceback: Any | None,
     ) -> None:
-        if exception_type is not None:
-            try:
+
+        try:
+            if exception_type is None:
+                self.commit()
+            else:
                 self.rollback()
-            finally:
-                self.disconnect()
-        else:
+        finally:
             self.disconnect()
