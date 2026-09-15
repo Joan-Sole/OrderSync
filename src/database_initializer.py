@@ -11,8 +11,8 @@ Location:
 Description:
 	Checks and initializes the SQL Server database schema.
 
-Version:
-	1.0.0
+Author:
+    Joan Solé
 """
 
 from pathlib import Path

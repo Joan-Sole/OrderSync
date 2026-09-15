@@ -11,16 +11,16 @@ Location:
 Description:
     HyperFile connection management through OLE DB and ADODB.
 
-Version:
-    1.0.0
+Author:
+    Joan Solé
 """
 
 from typing import Any
 
 import win32com.client as ole
 
-from .exceptions import HyperFileConnectionError
-from .settings import Settings
+from core.exceptions import HyperFileConnectionError
+from core.settings import Settings
 import logging
 
 logger = logging.getLogger(__name__)

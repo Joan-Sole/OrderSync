@@ -12,15 +12,12 @@ Description:
 
 Author:
     Joan Solé
-
-Version:
-    1.0.0
 """
 
 from   pathlib import Path
 from   logging.handlers import RotatingFileHandler
 import logging
-from   .settings import Settings
+from   core.settings import Settings
 
 
 def initialise_logger(settings: Settings) -> logging.Logger:

@@ -10,8 +10,8 @@ Location:
 Description:
     Reads order headers and order lines from the HyperFile database.
 
-Version:
-    1.0.0
+Author:
+    Joan Solé
 """
 from collections import defaultdict
 from collections.abc import Iterator
@@ -143,9 +143,10 @@ class HyperFileRepository:
                 STATUTEDI
                 
             FROM COMMANDE 
-            {where_clause}
+            {where_clause} OR TYPCDE<>'V'
             ORDER BY NOCDE
         """
+        logger.debug(where_clause)
 
         recordset = None
 
@@ -198,13 +199,15 @@ class HyperFileRepository:
         FROM LGCDE
         INNER JOIN COMMANDE
             ON LGCDE.NOCDE = COMMANDE.NOCDE
-            {where_clause}
+            {where_clause} OR COMMANDE.TYPCDE<>'V'
         ORDER BY
             LGCDE.NOCDE,
             LGCDE.CMARQ,
             LGCDE.CCATEG,
             LGCDE.CPROD
         """
+
+        logger.debug(where_clause)
 
         recordset = None
 

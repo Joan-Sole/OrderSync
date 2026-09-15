@@ -10,13 +10,13 @@ Location:
 Description:
     Loads and validates application configuration from YAML.
 
-Version:
-    1.0.0
+Author:
+    Joan Solé
 """
 
 from dataclasses import dataclass
 from pathlib import Path
-from .exceptions import ConfigurationError
+from core.exceptions import ConfigurationError
 
 import yaml
 import logging

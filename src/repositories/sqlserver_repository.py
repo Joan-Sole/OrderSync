@@ -11,8 +11,8 @@ Description:
     Repository for accessing COMMANDE and LGCDE data stored in SQL Server.
     SQL Server table and field names preserve the original HyperFile names.
 
-Version:
-    1.0.0
+Author:
+    Joan Solé
 """
 
 from __future__ import annotations

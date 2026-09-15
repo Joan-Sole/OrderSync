@@ -13,8 +13,6 @@ Description:
 Author:
     Joan Solé
 
-Version:
-    1.0.0
 """
 
 

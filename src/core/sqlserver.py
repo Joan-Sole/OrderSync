@@ -11,8 +11,8 @@ Location:
 Description:
     SQL Server connection management through pyodbc.
 
-Version:
-    1.0.0
+Author:
+    Joan Solé
 """
 
 from __future__ import annotations
@@ -22,8 +22,8 @@ import logging
 
 import pyodbc
 
-from .exceptions import SqlServerConnectionError
-from .settings import Settings
+from core.exceptions import SqlServerConnectionError
+from core.settings import Settings
 logger = logging.getLogger(__name__)
 
 
