@@ -58,6 +58,7 @@ def main() -> None:
 			synchronization_service = SynchronizationService(
 				source_repository,
 				destination_repository,
+				settings.application.maj_periode,
 			)
 
 			stats = synchronization_service.synchronize()
