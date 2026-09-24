@@ -58,13 +58,6 @@ class SynchronizationError(OrderSyncError):
     pass
 
 
-class ETLError(OrderSyncError):
-    """
-    Raised for ETL execution or monitoring errors.
-    """
-    pass
-
-
 class SqlServerConnectionError(OrderSyncError):
     """
     Raised when a SQL Server connection or operation fails.

@@ -10,14 +10,14 @@ logs/
 *.log
 
 # VS Code settings (optional)
-.vscode/
+#.vscode/
 
 # Pytest cache
 .pytest_cache/
 
 # Coverage reports
-.coverage
-htmlcov/
+#.coverage
+#htmlcov/
 
 # Windows
 Thumbs.db

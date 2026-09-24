@@ -1,0 +1,6 @@
+SET WP=C:\WINPARF
+SET ORDERSYNC=%WP%\ORDERSYNC
+cd %ORDERSYNC%
+
+python -m venv .venv
+

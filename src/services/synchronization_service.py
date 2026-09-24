@@ -15,7 +15,7 @@ Author:
 """
 
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import timedelta, date
 import logging
 
 from models.commande import Commande
@@ -325,11 +325,12 @@ class SynchronizationService:
 
             if commande.DTCDE >= filter_date:
 
-                self._destination.delete_commande(
+                lines_deleted = self._destination.delete_commande(
                     commande.NOCDE
                 )
 
                 stats.orders_deleted += 1
+                stats.lines_deleted += lines_deleted
 
                 logger.warning(
                     "COMMANDE deleted because it no longer "

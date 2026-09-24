@@ -21,7 +21,7 @@ class Commande:
     DTLIVPREVU: date | None
     NBJOURS: str | None
     CDECENTRAL: bool | None
-    TXREM: float | None
+    TXREM: str | None
     MTCDE: float | None
     MTRECU: float | None
     MAGCDE: str | None

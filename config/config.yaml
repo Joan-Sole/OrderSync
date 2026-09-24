@@ -3,10 +3,10 @@
 application:
   name: OrderSync
   version: 1.0.0
-  log_directory: logs
+  log_directory: c:\winparf\logs
   log_level: INFO
 # int en numéro de semaines. Fenêtre arrière pour mettre à jour les commandes dans COMMANDE et LGCDE. Absence, "0" ou negatif => fenêtre de filtrage désactivée.
-  maj_periode: 30
+  maj_periode: 56
 
 hyperfile:
   provider: PCSOFT.HFSQL

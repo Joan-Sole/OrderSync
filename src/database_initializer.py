@@ -32,8 +32,6 @@ class DatabaseInitializer:
 	REQUIRED_TABLES = {
 		"COMMANDE",
 		"LGCDE",
-		"ETL_CONTROL",
-		"ETL_RUN",
 	}
 
 	def __init__(

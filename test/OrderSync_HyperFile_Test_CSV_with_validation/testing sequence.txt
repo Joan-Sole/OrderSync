@@ -1,0 +1,23 @@
+Delete the contents of SQLServer COMMANDE and LGCDE tables.
+Upload DUPLICATE_COMMANDE.txt using WPBATCH into the Winparf instance.
+Upload DUPLICATE_LGCDE.txt using WPBATCH into the Winparf instance.
+Set the running environment in "Python: Current File [No arguments]" in VS Code
+Run many.py to see that it aborts because key fields are duplicated.
+
+Upload V1_COMMANDE.txt using WPBATCH into the Winparf instance.
+Upload V1_LGCDE.txt using WPBATCH into the Winparf instance.
+Run main.py to update the SQLServer tables
+Check results in SQLServer from Hyperfile
+Set the running environment in "Database Validator COMMANDE" in VS Code
+Run database_validator_commande.py (to detect problems in the last update)
+Set the running environment in "Database Validator LGCDE" in VS Code
+Run database_validator_lgcde.py (to detect problems in the last update)
+
+Upload V2_COMMANDE.txt using WPBATCH into the Winparf instance.
+Upload V2_LGCDE.txt using WPBATCH into the Winparf instance.
+Run main.py to update the SQLServer tables.
+Check results in SQLServer from Hyperfile
+Set the running environment in "Database Validator COMMANDE" in VS Code
+Run database_validator_commande.py (to detect problems in the last update)
+Set the running environment in "Database Validator LGCDE" in VS Code
+Run database_validator_lgcde.py (to detect problems in the last update)

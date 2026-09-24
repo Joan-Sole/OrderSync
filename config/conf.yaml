@@ -1,0 +1,20 @@
+# YAML file location : config/
+
+application:
+  name: OrderSync
+  version: 1.0.0
+  frozen_months: 3
+  log_directory: logs
+  log_level: DEBUG
+
+hyperfile:
+  driver: "HyperFileSQL"
+  server: W10\SQLEXPRESS
+  database: WINPARF
+  username: sa
+  password: ysatis
+
+sqlserver:
+  server: W10\SQLEXPRESS
+  database: WINPARF
+  trusted_connection: true

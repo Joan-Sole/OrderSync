@@ -15,7 +15,7 @@ class Lgcde:
 	PAMP: float | None
 	QTESTK: int | None
 	QTECDE: int | None
-	TXREM: float | None
+	TXREM: str | None
 	TVA: float | None
 	QTERECU: int | None
 	QTEREFUS: int | None

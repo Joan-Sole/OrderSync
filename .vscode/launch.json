@@ -1,0 +1,70 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File [No arguments]",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src"
+        },
+        {
+            "name": "Database Validator COMMANDE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/database_validator_commande.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": [
+                "--keys",
+                "NOCDE",
+                "--fields",
+                "TYPCDE",
+                "CFOUR",
+                "CCOMPTE",
+                "LIBCDE",
+                "DTCDE",
+                "HEURECDE",
+                "NOCHRONO",
+                "OBSER",
+                "MODECDE",
+                "DTLIVPREVU",
+                "NBJOURS",
+                "CDECENTRAL",
+                "TXREM",
+                "MTCDE",
+                "MTRECU",
+                "MAGCDE",
+                "MAGLIVR",
+                "RETOUR_CDE",
+                "DTREC",
+                "DTFACT",
+                "FORMAT_EDI",
+                "STATUTEDI"
+            ]
+        },
+        {
+            "name": "Database Validator LGCDE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/database_validator_lgcde.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": [
+                "--fields",
+				"TYPCDE",
+				"PAAR",
+				"PAMP",
+				"QTESTK",
+				"QTECDE",
+				"TXREM",
+				"TVA",
+				"QTERECU",
+				"QTEREFUS",
+				"QTEFAC",
+				"MTLIG"
+            ]
+        }
+    ]
+}

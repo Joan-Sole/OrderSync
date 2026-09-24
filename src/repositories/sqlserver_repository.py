@@ -23,7 +23,8 @@ import logging
 from core.sqlserver import SqlServerConnection
 from models.commande import Commande
 from models.lgcde import Lgcde
-
+from core.exceptions import RepositoryError
+from datetime import date, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -224,13 +225,15 @@ class SqlServerRepository:
         parameters = self._commande_parameters(
             commande
         )
-
-        cursor = self._connection.execute(
-            query,
-            parameters,
-        )
-
-        cursor.close()
+        try:
+            cursor = self._connection.execute(
+                query,
+                parameters,
+            )
+        except Exception as exc:
+            raise RepositoryError(f"Unable to insert COMMANDE {commande.NOCDE}: {exc}") from exc 
+        finally:
+            cursor.close()
 
 
     def update_commande(
@@ -293,13 +296,15 @@ class SqlServerRepository:
             commande.STATUTEDI,
             commande.NOCDE,
         )
-
-        cursor = self._connection.execute(
-            query,
-            parameters,
-        )
-
-        cursor.close()
+        try:
+            cursor = self._connection.execute(
+                query,
+                parameters,
+            )
+        except Exception as exc:
+            raise RepositoryError(f"Unable to update COMMANDE {commande.NOCDE}: {exc}") from exc
+        finally:
+            cursor.close()
 
 
     def get_commandes_for_reconciliation(
@@ -368,44 +373,49 @@ class SqlServerRepository:
             WHERE NOCDE = ?
         """
 
-        cursor = self._connection.execute(
-            query,
-            (nocde,),
-        )
+        try:
+            cursor = self._connection.execute(
+                query,
+                (nocde,),
+            )
+        except Exception as exc:
+            raise RepositoryError(f"Unable to update COMMANDE {nocde} to 'V' : {exc}") from exc
+        finally:
+            cursor.close()
 
-        cursor.close()
-
-
-    def delete_commande(
-        self,
-        nocde: str,
-    ) -> None:
+    def delete_commande(self, nocde: str) -> int:
         """
         Delete one COMMANDE and all its LGCDE records.
 
         LGCDE must be deleted first because it references COMMANDE.
         """
-
-        cursor = self._connection.execute(
+        try:
+            cursor = self._connection.execute(
             """
             DELETE FROM LGCDE
             WHERE NOCDE = ?
             """,
             (nocde,),
-        )
+            )
 
-        cursor.close()
+            lines_deleted = cursor.rowcount
+            cursor.close()
 
-        cursor = self._connection.execute(
+            cursor = self._connection.execute(
             """
             DELETE FROM COMMANDE
             WHERE NOCDE = ?
             """,
             (nocde,),
-        )
+            )
 
-        cursor.close()
+            cursor.close()
 
+            return lines_deleted
+        except Exception as exc:
+            raise RepositoryError(
+                f"Unable to delete COMMANDE {nocde}: {exc}"
+            ) from exc
 
     # ============================================================
     # LGCDE
@@ -589,13 +599,15 @@ class SqlServerRepository:
             line.QTEFAC,
             line.MTLIG,
         )
-
-        cursor = self._connection.execute(
-            query,
-            parameters,
-        )
-
-        cursor.close()
+        try:
+            cursor = self._connection.execute(
+                query,
+                parameters,
+            )
+        except Exception as exc:
+            raise RepositoryError(  f"Unable to insert LGCDE line for order {line.NOCDE}: {exc}") from exc
+        finally:
+            cursor.close()
 
 
     def update_lgcde(
@@ -642,12 +654,15 @@ class SqlServerRepository:
             line.CPROD,
         )
 
-        cursor = self._connection.execute(
-            query,
-            parameters,
-        )
-
-        cursor.close()
+        try:
+            cursor = self._connection.execute(
+                query,
+                parameters,
+            )
+        except Exception as exc:
+            raise RepositoryError(f"Unable to update LGCDE line for order {line.NOCDE}: {exc}") from exc
+        finally:
+            cursor.close()
 
 
     def delete_lgcde(
@@ -666,25 +681,39 @@ class SqlServerRepository:
                 AND CPROD = ?
         """
 
-        cursor = self._connection.execute(
-            query,
-            (
-                nocde,
-                cmarq,
-                ccateg,
-                cprod,
-            ),
-        )
-
-        cursor.close()
+        try:
+            cursor = self._connection.execute(
+                query,
+                (
+                    nocde,
+                    cmarq,
+                    ccateg,
+                    cprod,
+                ),
+            )
+        except Exception as exc:
+            raise RepositoryError(
+                f"Unable to delete LGCDE lines for order {nocde}: {exc}"
+            ) from exc
+        finally:
+            cursor.close()
 
 
     # ============================================================
     # Internal builders
     # ============================================================
 
+
     @staticmethod
-    def _build_commande(row: Any) -> Commande:
+    def _date_value(value: date | datetime | None) -> date | None:
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        return None
+
+
+    def _build_commande(self, row: Any) -> Commande:
         """
         Build a Commande model from one SQL Server row.
         """
@@ -695,22 +724,22 @@ class SqlServerRepository:
             CFOUR=str(row[2]).strip(),
             CCOMPTE=None if row[3] is None else str(row[3]).strip(),
             LIBCDE=None if row[4] is None else str(row[4]).strip(),
-            DTCDE=row[5],
+            DTCDE=self._date_value(row[5]),
             HEURECDE=None if row[6] is None else str(row[6]).strip(),
             NOCHRONO=None if row[7] is None else str(row[7]).strip(),
             OBSER=None if row[8] is None else str(row[8]).strip(),
             MODECDE=None if row[9] is None else str(row[9]).strip(),
-            DTLIVPREVU=row[10],
+            DTLIVPREVU=self._date_value(row[10]),
             NBJOURS=None if row[11] is None else str(row[11]).strip(),
             CDECENTRAL=None if row[12] is None else bool(row[12]),
-            TXREM=None if row[13] is None else float(row[13]),
+            TXREM=None if row[13] is None else str(row[13]).strip(),
             MTCDE=None if row[14] is None else float(row[14]),
             MTRECU=None if row[15] is None else float(row[15]),
             MAGCDE=None if row[16] is None else str(row[16]).strip(),
             MAGLIVR=None if row[17] is None else str(row[17]).strip(),
             RETOUR_CDE=None if row[18] is None else str(row[18]).strip(),
-            DTREC=row[19],
-            DTFACT=row[20],
+            DTREC=self._date_value(row[19]),
+            DTFACT=self._date_value(row[20]),
             FORMAT_EDI=None if row[21] is None else bool(row[21]),
             STATUTEDI=None if row[22] is None else str(row[22]).strip(),
         )
@@ -721,7 +750,6 @@ class SqlServerRepository:
         """
         Build an Lgcde model from one SQL Server row.
         """
-
         return Lgcde(
             TYPCDE=str(row[0]).strip(),
             NOCDE=str(row[1]).strip(),
@@ -732,7 +760,7 @@ class SqlServerRepository:
             PAMP=None if row[6] is None else float(row[6]),
             QTESTK=None if row[7] is None else int(row[7]),
             QTECDE=None if row[8] is None else int(row[8]),
-            TXREM=None if row[9] is None else float(row[9]),
+            TXREM=None if row[9] is None else str(row[9]).strip(),
             TVA=None if row[10] is None else float(row[10]),
             QTERECU=None if row[11] is None else int(row[11]),
             QTEREFUS=None if row[12] is None else int(row[12]),

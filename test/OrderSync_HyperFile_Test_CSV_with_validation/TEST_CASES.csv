@@ -1,0 +1,17 @@
+﻿ID;TABLE;CASE;EXPECTED
+0000101;COMMANDE;NOCDE missing;ValidationError / discard
+0000102;COMMANDE;TYPCDE missing;ValidationError / discard
+0000103;COMMANDE;CFOUR missing;ValidationError / discard
+0000104;COMMANDE;DTCDE missing;ValidationError / discard
+0000105;COMMANDE;DTCDE invalid;ValidationError / discard
+0000106;COMMANDE;DTLIVPREVU invalid;Optional invalid value: expected normalization to None
+0000107;COMMANDE;MTCDE invalid;Optional invalid value: expected normalization to None
+0000108;COMMANDE;CDECENTRAL invalid;Optional invalid value: expected normalization to None
+L201;LGCDE;TYPCDE missing;ValidationError / discard
+L202;LGCDE;NOCDE missing;ValidationError / discard
+L203;LGCDE;CMARQ missing;ValidationError / discard
+L204;LGCDE;CCATEG missing;ValidationError / discard
+L205;LGCDE;CPROD missing;ValidationError / discard
+L206;LGCDE;PAAR invalid;Optional invalid numeric: expected normalization to None
+L207;LGCDE;QTECDE invalid;Optional invalid numeric: expected normalization to None
+L208;LGCDE;TVA invalid;Optional invalid numeric: expected normalization to None
