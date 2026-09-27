@@ -1,6 +1,6 @@
 @echo off
 :: Paths
-SET WP=C:\WINPARF
+SET WP=C:\PROJECTS
 SET ORDERSYNC=%WP%\ORDERSYNC
 :: Fichier de log uniquement pour capturer les erreurs de python
 SET LOGFILE=%ORDERSYNC%\logs\execution.log

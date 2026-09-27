@@ -9,6 +9,7 @@ class Lgcde:
 	TYPCDE: str
 	NOCDE: str
 	CMARQ: str
+	CLIGNE: str
 	CCATEG: str
 	CPROD: str
 	PAAR: float | None
@@ -35,13 +36,15 @@ class Lgcde:
 
 
 	@property
-	def line_key(self) -> tuple[str, str, str, str]:
+	def line_key(self) -> tuple[str, str, str, str, str, str]:
 		"""
 		Unique key of one order line.
 		"""
 		return (
+			self.TYPCDE,
 			self.NOCDE,
 			self.CMARQ,
+			self.CLIGNE,
 			self.CCATEG,
 			self.CPROD,
 		)

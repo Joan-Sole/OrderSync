@@ -43,6 +43,7 @@ def main() -> None:
 
 	initialise_logger(settings)
 	logger = logging.getLogger(__name__)
+	logger.info("Replicating COMMANDE and LGCDE tables.")
 	
 	with HyperFileConnection(settings) as hyper:
 		with SqlServerConnection(settings) as sql:

@@ -9,6 +9,6 @@ echo   VALIDATION LGCDE (MAJ SQLSERVER  %date%   %time%           >> %LOGFILE%
 echo =============================================================== >> %LOGFILE%
 call %ORDERSYNC%\.venv\scripts\activate.bat     >> %LOGFILE% 2>&1
 cd  /d %ORDERSYNC%\src
-python database_validator_lgcde.py --fields TYPCDE PAAR PAMP QTESTK QTECDE TXREM TVA QTERECU QTEREFUS QTEFAC MTLIG  >> %LOGFILE% 2>&1
+python database_validator_lgcde.py --fields PAAR PAMP QTESTK QTECDE TXREM TVA QTERECU QTEREFUS QTEFAC MTLIG  >> %LOGFILE% 2>&1
 call %ORDERSYNC%\.venv\scripts\deactivate.bat   >> %LOGFILE% 2>&1
 exit

@@ -1,0 +1,24 @@
+PROCEDURE TO MAKE CHANGES IN ORDERSYNC
+
+- After the modifications are performed you commit and push Github
+- You decide whether to create a new version
+- You check "proj_to_repfor_notepad.bat" to make sure all files are there and properly renamed
+
+
+PROCEDURE TO CREATE A DELIVERABLE
+
+- Copy Ordersync folder in c:\intall
+- Edit config.yaml and set "log_level: INFO"
+- You verify that bat files are proper for delivering (Ordersync place must be "c:\winparf")
+- Delete all unecessary folder and files (search_sandbox is necessary)
+- zip as Ordersync.7z
+
+
+PROCEDURE TO UPDATE SOME FILES IN CUSTOMER INSTALLATIONS
+
+- run "proj_to_repfor_notepad.bat" in delivery server
+- run "proj_to_repfor_notepad.bat" in customer server
+- compare files and versions
+- decide wheter to replace or to newly install Ordersync.
+- replace files and versions. Take care not to overwritte customer server configuration files
+

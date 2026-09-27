@@ -33,8 +33,10 @@ logger = logging.getLogger(__name__)
 DEFAULT_DATE_FIELD: str = "DTCDE"
 
 LGCDE_KEY_FIELDS: tuple[str, ...] = (
+    "TYPCDE",
     "NOCDE",
     "CMARQ",
+    "CLIGNE",
     "CCATEG",
     "CPROD",
 )
@@ -78,8 +80,7 @@ class DatabaseValidator:
         filter_date = date.today() - timedelta(weeks=weeks)
 
         condition = (
-            f"{key_time} >= "
-            f"'{filter_date.strftime('%Y%m%d')}'"
+            f"{key_time} >= '{filter_date.strftime('%Y%m%d')}' AND TYPCDE<>'\\\\'"
         )
 
         query = f"""
@@ -143,6 +144,9 @@ class DatabaseValidator:
                 nocde_value = (
                     recordset.Fields("NOCDE").Value
                 )
+                typcde_value = (
+                    recordset.Fields("TYPCDE").Value
+                )
 
                 nocde = (
                     str(nocde_value).strip()
@@ -150,7 +154,13 @@ class DatabaseValidator:
                     else ""
                 )
 
-                if nocde in nocdes:
+                typcde = (
+                    str(typcde_value).strip()
+                    if typcde_value is not None
+                    else ""
+                )
+
+                if nocde in nocdes and typcde != '\\':
 
                     row = {
                         field:

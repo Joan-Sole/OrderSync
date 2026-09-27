@@ -1,0 +1,3 @@
+TODO list:
+
+- Ameliorate le filtrage des commandes annulées '\' parce qu'il prend beaucoup de temps. TYPCDE = '\' functionally means "does not exist for OrderSync," the existing reconciliation process means that an order in SQL Server which subsequently changes to '\' will disappear from SQL Server if it falls within the *maj_periode*.

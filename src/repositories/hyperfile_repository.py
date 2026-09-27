@@ -37,27 +37,24 @@ class HyperFileRepository:
         self._connection = connection
 
 
-    def filter_orders_by_date_clause(self, per: Any | None = None, where: str ='', field: str ='DTCDE') -> str:
+    def filter_orders_by_date_clause(self, per: Any | None = None, field: str ='DTCDE') -> str:
         """
         Return a SQL WHERE clause to filter orders by date.
 
         Args:
             per (int): Number of weeks to look back from today. By default is loaded as settings.application.maj_periode
-            where (str): Can insert and existing SQL WHERE clause to append to. We assume no blanks at the beginning
-            field (str): Date field used for filtering.
+            field (str): Table Date field used for filtering.
 
         Returns:
-            str: SQL WHERE clause.
+            str: SQL clause.
         """
+        empty=' 1 = 1 '
 
         if per is None:
-            
             # script location /OrderSync/src/repositories/hyperfile_repository.py  target location /OrderSync
             project_root = Path(__file__).resolve().parents[2]
-
             # final target location /OrderSync/config
             config_directory = project_root / "config"
-
             config_file = config_directory / "config.yaml"
             settings = load_settings(config_file)
             per = settings.application.maj_periode
@@ -69,7 +66,7 @@ class HyperFileRepository:
 
         if periode <= 0:
             logger.warning("Période de filtrage désactivée.")
-            return where
+            return empty
 
         filter_date = date.today() - timedelta(weeks=periode)
 
@@ -77,10 +74,7 @@ class HyperFileRepository:
             f"{field} >= '{filter_date.strftime('%Y%m%d')}'"
         )
 
-        if where:
-            return f"{where} AND {condition}"
-
-        return f"WHERE {condition}"
+        return f" {condition} "
 
     
     def iter_orders_with_lines(
@@ -112,9 +106,11 @@ class HyperFileRepository:
 
 
     def iter_orders(self) -> Iterator[Commande]:
-        """Read every COMMANDE record sequentially using one query."""
+        """Read every COMMANDE record sequentially using one query.
+           Remark: TYPCDE = \\ functionally means does not exist for OrderSync, the existing reconciliation process means that an order in SQL Server which subsequently changes to \\ will disappear from SQL Server if it falls within the *maj_periode*.
+        """
 
-        where_clause = self.filter_orders_by_date_clause()
+        cond_clause = self.filter_orders_by_date_clause(field="DTCDE")
 
         query = f"""
             SELECT
@@ -143,10 +139,10 @@ class HyperFileRepository:
                 STATUTEDI
                 
             FROM COMMANDE 
-            {where_clause} OR TYPCDE<>'V'
+            WHERE ({cond_clause} OR TYPCDE<>'V') AND TYPCDE<>'\\\\'
             ORDER BY NOCDE
         """
-        logger.debug(where_clause)
+        logger.debug("WHERE (%s OR TYPCDE<>'V') AND TYPCDE<>'\\'", cond_clause)
 
         recordset = None
 
@@ -177,13 +173,14 @@ class HyperFileRepository:
     def iter_order_lines(self) -> Iterator[Lgcde]:
         """Read every LGCDE record sequentially using one query."""
 
-        where_clause = self.filter_orders_by_date_clause(field="COMMANDE.DTCDE")
+        cond_clause = self.filter_orders_by_date_clause(field="COMMANDE.DTCDE")
         
         query = f"""
         SELECT
             LGCDE.TYPCDE,
             LGCDE.NOCDE,
             LGCDE.CMARQ,
+            LGCDE.CLIGNE,
             LGCDE.CCATEG,
             LGCDE.CPROD,
             LGCDE.PAAR,
@@ -199,15 +196,17 @@ class HyperFileRepository:
         FROM LGCDE
         INNER JOIN COMMANDE
             ON LGCDE.NOCDE = COMMANDE.NOCDE
-            {where_clause} OR COMMANDE.TYPCDE<>'V'
+            WHERE ({cond_clause} OR COMMANDE.TYPCDE<>'V') AND COMMANDE.TYPCDE<>'\\\\'
         ORDER BY
+            LGCDE.TYPCDE,
             LGCDE.NOCDE,
             LGCDE.CMARQ,
+            LGCDE.CLIGNE,
             LGCDE.CCATEG,
             LGCDE.CPROD
         """
 
-        logger.debug(where_clause)
+        logger.debug("WHERE (%s OR COMMANDE.TYPCDE<>'V') AND COMMANDE.TYPCDE<>'\\'", cond_clause)
 
         recordset = None
 
@@ -288,6 +287,8 @@ class HyperFileRepository:
             TYPCDE=self._required_text_value(recordset, "TYPCDE"),
             NOCDE=self._required_text_value(recordset, "NOCDE"),
             CMARQ=self._required_text_value(recordset, "CMARQ"),
+            # CLIGNE peut être NULL dans Hyperfile mais un valeur est requis parce qu'elle fait partie de la clé primaire.
+            CLIGNE=self._text_value(recordset, "CLIGNE"),
             CCATEG=self._required_text_value(recordset, "CCATEG"),
             CPROD=self._required_text_value(recordset, "CPROD"),
             PAAR=self._float_value(recordset, "PAAR"),
@@ -325,6 +326,7 @@ class HyperFileRepository:
         field_name: str,
         default: str = "",
  ) -> str | None:
+        
         value = self._field_value(recordset, field_name, default)
 
         if value is None:

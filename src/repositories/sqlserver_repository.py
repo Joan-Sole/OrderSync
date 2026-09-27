@@ -461,8 +461,10 @@ class SqlServerRepository:
 
     def lgcde_exists(
         self,
+        typcde: str,
         nocde: str,
         cmarq: str,
+        cligne: str,
         ccateg: str,
         cprod: str,
     ) -> bool:
@@ -471,8 +473,10 @@ class SqlServerRepository:
             SELECT 1
             FROM LGCDE
             WHERE
-                NOCDE = ?
+                TYPCDE = ?
+                AND NOCDE = ?
                 AND CMARQ = ?
+                AND CLIGNE = ?
                 AND CCATEG = ?
                 AND CPROD = ?
         """
@@ -480,8 +484,10 @@ class SqlServerRepository:
         cursor = self._connection.execute(
             query,
             (
+                typcde,
                 nocde,
                 cmarq,
+                cligne,
                 ccateg,
                 cprod,
             ),
@@ -498,14 +504,14 @@ class SqlServerRepository:
         self,
         nocde: str,
     ) -> dict[
-        tuple[str, str, str, str],
+        tuple[str, str, str, str, str, str],
         Lgcde,
     ]:
         """
         Return all LGCDE records belonging to one COMMANDE.
 
         Dictionary key:
-            (NOCDE, CMARQ, CCATEG, CPROD)
+            (TYPCDE, NOCDE, CMARQ, CLIGNE, CCATEG, CPROD)
         """
 
         query = """
@@ -513,6 +519,7 @@ class SqlServerRepository:
                 TYPCDE,
                 NOCDE,
                 CMARQ,
+                CLIGNE,
                 CCATEG,
                 CPROD,
                 PAAR,
@@ -536,7 +543,7 @@ class SqlServerRepository:
 
         try:
             result: dict[
-                tuple[str, str, str, str],
+                tuple[str, str, str, str, str, str],
                 Lgcde,
             ] = {}
 
@@ -562,6 +569,7 @@ class SqlServerRepository:
                 TYPCDE,
                 NOCDE,
                 CMARQ,
+                CLIGNE,
                 CCATEG,
                 CPROD,
                 PAAR,
@@ -578,7 +586,7 @@ class SqlServerRepository:
             VALUES (
                 ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?,
-                ?, ?, ?
+                ?, ?, ?, ?
             )
         """
 
@@ -586,6 +594,7 @@ class SqlServerRepository:
             line.TYPCDE,
             line.NOCDE,
             line.CMARQ,
+            line.CLIGNE,
             line.CCATEG,
             line.CPROD,
             line.PAAR,
@@ -618,7 +627,6 @@ class SqlServerRepository:
         query = """
             UPDATE LGCDE
             SET
-                TYPCDE = ?,
                 PAAR = ?,
                 PAMP = ?,
                 QTESTK = ?,
@@ -630,14 +638,15 @@ class SqlServerRepository:
                 QTEFAC = ?,
                 MTLIG = ?
             WHERE
-                NOCDE = ?
+                TYPCDE = ?
+                AND NOCDE = ?
                 AND CMARQ = ?
+                AND CLIGNE = ?
                 AND CCATEG = ?
                 AND CPROD = ?
         """
 
         parameters = (
-            line.TYPCDE,
             line.PAAR,
             line.PAMP,
             line.QTESTK,
@@ -648,8 +657,10 @@ class SqlServerRepository:
             line.QTEREFUS,
             line.QTEFAC,
             line.MTLIG,
+            line.TYPCDE,
             line.NOCDE,
             line.CMARQ,
+            line.CLIGNE,
             line.CCATEG,
             line.CPROD,
         )
@@ -667,16 +678,18 @@ class SqlServerRepository:
 
     def delete_lgcde(
         self,
-        line_key: tuple[str, str, str, str],
+        line_key: tuple[str, str, str, str, str, str],
     ) -> None:
 
-        nocde, cmarq, ccateg, cprod = line_key
+        typcde, nocde, cmarq, cligne, ccateg, cprod = line_key
 
         query = """
             DELETE FROM LGCDE
             WHERE
-                NOCDE = ?
+                TYPCDE = ?
+                AND NOCDE = ?
                 AND CMARQ = ?
+                AND CLIGNE = ?
                 AND CCATEG = ?
                 AND CPROD = ?
         """
@@ -685,8 +698,10 @@ class SqlServerRepository:
             cursor = self._connection.execute(
                 query,
                 (
+                    typcde,
                     nocde,
                     cmarq,
+                    cligne,
                     ccateg,
                     cprod,
                 ),
@@ -754,18 +769,19 @@ class SqlServerRepository:
             TYPCDE=str(row[0]).strip(),
             NOCDE=str(row[1]).strip(),
             CMARQ=str(row[2]).strip(),
-            CCATEG=str(row[3]).strip(),
-            CPROD=str(row[4]).strip(),
-            PAAR=None if row[5] is None else float(row[5]),
-            PAMP=None if row[6] is None else float(row[6]),
-            QTESTK=None if row[7] is None else int(row[7]),
-            QTECDE=None if row[8] is None else int(row[8]),
-            TXREM=None if row[9] is None else str(row[9]).strip(),
-            TVA=None if row[10] is None else float(row[10]),
-            QTERECU=None if row[11] is None else int(row[11]),
-            QTEREFUS=None if row[12] is None else int(row[12]),
-            QTEFAC=None if row[13] is None else int(row[13]),
-            MTLIG=None if row[14] is None else float(row[14]),
+            CLIGNE=str(row[3]).strip(),
+            CCATEG=str(row[4]).strip(),           
+            CPROD=str(row[5]).strip(),
+            PAAR=None if row[6] is None else float(row[6]),
+            PAMP=None if row[7] is None else float(row[7]),
+            QTESTK=None if row[8] is None else int(row[8]),
+            QTECDE=None if row[9] is None else int(row[9]),
+            TXREM=None if row[10] is None else str(row[10]).strip(),
+            TVA=None if row[11] is None else float(row[11]),
+            QTERECU=None if row[12] is None else int(row[12]),
+            QTEREFUS=None if row[13] is None else int(row[13]),
+            QTEFAC=None if row[14] is None else int(row[14]),
+            MTLIG=None if row[15] is None else float(row[15]),
         )
 
 

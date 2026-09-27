@@ -7,6 +7,8 @@ echo installation des modules python
 echo .
 python -m pip install --upgrade pip
 pip install pyodbc
+pip install PyYAML
+pip install pywin32
 call .venv\scripts\deactivate.bat 
 pause
 exit

@@ -130,7 +130,7 @@ class DatabaseValidator:
 
         filter_date = date.today() - timedelta(weeks=weeks)
         condition = (
-            f"{key_time} >= '{filter_date.strftime('%Y%m%d')}'"
+            f"{key_time} >= '{filter_date.strftime('%Y%m%d')}' AND TYPCDE<>'\\\\'"
         )
         logger.info("Condition: %s", condition)
 
